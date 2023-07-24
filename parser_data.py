@@ -78,8 +78,8 @@ with open("url.txt", "r") as f:
 
 # Создание файла csv для записи результатов
 with open("data.csv", "w", newline="", encoding="utf_8_sig") as csvfile:
-    fieldnames = ["Код товара", "Название продукта", "Путь разделов",
-                  "Единица измерения", "Цена", "Длина", "Ширина", "Толщина"]
+    fieldnames = ["Артикул материала", "Наименование материала", "Наименование группы",
+                  "Единица измерения", "Стоимость", "Длина", "Ширина", "Толщина", "Толщина2"]
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=";")
     writer.writeheader()
 
@@ -89,13 +89,23 @@ with open("data.csv", "w", newline="", encoding="utf_8_sig") as csvfile:
 
         if parsed_data:
             # Запись результатов в файл csv
+            # Преобразование и форматирование чисел перед записью в файл csv
+            price = float(parsed_data["price"].replace(
+                " ", "").replace(",", "."))
+            length = float(parsed_data["characteristics"].get("length", "").replace(" ", "").replace(
+                ",", ".")) if parsed_data["characteristics"].get("length", "") else 0.0
+            width = float(parsed_data["characteristics"].get("width", "").replace(" ", "").replace(
+                ",", ".")) if parsed_data["characteristics"].get("width", "") else 0.0
+            depth = float(parsed_data["characteristics"].get("depth", "").replace(" ", "").replace(
+                ",", ".")) if parsed_data["characteristics"].get("depth", "") else 0.0
             writer.writerow({
-                "Код товара": parsed_data["article"] if parsed_data else "",
-                "Название продукта": parsed_data["product_name"] if parsed_data else "",
-                "Путь разделов": parsed_data["path_item"] if parsed_data else "",
+                "Артикул материала": parsed_data["article"] if parsed_data else "",
+                "Наименование материала": parsed_data["product_name"] if parsed_data else "",
+                "Наименование группы": parsed_data["path_item"] if parsed_data else "",
                 "Единица измерения": parsed_data["unit"].replace("₴/", "") if parsed_data else "",
-                "Цена": format_float_with_comma(float(parsed_data["price"].replace(" ", "").replace(",", "."))) if parsed_data else "",
-                "Длина": format_float_with_comma(float(parsed_data["characteristics"].get("length", "").replace(",", "."))) if parsed_data else "",
-                "Ширина": format_float_with_comma(float(parsed_data["characteristics"].get("width", "").replace(",", "."))) if parsed_data else "",
-                "Толщина": format_float_with_comma(float(parsed_data["characteristics"].get("depth", "").replace(",", "."))) if parsed_data else "",
+                "Стоимость": format_float_with_comma(price) if parsed_data else "",
+                "Длина": format_float_with_comma(length) if parsed_data else "",
+                "Ширина": format_float_with_comma(width) if parsed_data else "",
+                "Толщина": format_float_with_comma(depth) if parsed_data else "",
+                "Толщина2": format_float_with_comma(depth) if parsed_data else "",
             })
