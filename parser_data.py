@@ -10,16 +10,14 @@ def parse_page(url):
         response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
 
-        # Извлечение article
+        # Парсинг значений Артикул, Имя продукта, Путь, Цена, Ед. измерения, Длина, Ширина, Толщина
         article_tag = soup.find("sup", class_="product__title-sup m680--none")
         article = article_tag.find_next(
             "span", class_="product__title-sup-value").text.strip() if article_tag else ""
 
-        # Извлечение product_name (была изменена переменная name на product_name)
         product_name = soup.find(
             "h1", class_="product__title-text").text.strip() if soup.find("h1", class_="product__title-text") else ""
 
-        # Извлечение length, width и depth
         characteristics = {}
         char_sections = soup.find_all(
             "div", class_="product-info__content-section")
@@ -37,7 +35,6 @@ def parse_page(url):
                 elif name == "Товщина, мм:":
                     characteristics["depth"] = value
 
-        # Извлечение price и unit
         price_tag = soup.find(
             "span", class_="product-price__cost")
         price = price_tag.text.strip() if price_tag else ""
@@ -45,7 +42,6 @@ def parse_page(url):
             "sup", class_="product-price__title-sup") if price_tag else ""
         unit = unit_tag.text.strip() if unit_tag else ""
 
-        # Извлечение path_item
         path_item_tag = soup.find(
             "section", class_="main__section breadcrumbs-section")
         path_item = ""
@@ -66,6 +62,8 @@ def parse_page(url):
     except requests.exceptions.RequestException as e:
         print("Ошибка при загрузке страницы:", e)
         return None
+
+# Ф-я преобразования в числовой формат
 
 
 def format_float_with_comma(number):

@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import time
 
+# Ф-я сбора ссылок со страницы категории
+
 
 def get_links_from_page(url, class_name):
     response = requests.get(url)
@@ -12,16 +14,18 @@ def get_links_from_page(url, class_name):
         links.append(link["href"])
     return links
 
+# Ф-я парсинга значений url страницы
+
 
 def parse_all_urls(base_url, class_name):
     page_number = 1
     all_links = []
 
-    # Парсим со страниц без номера
+    # Парсим со страниц без номера (с первой страницы)
     url = f"{base_url}/"
     page_links = get_links_from_page(url, class_name)
     all_links.extend(page_links)
-
+    # Парсим со следующих страниц (/page-1-999/)
     while True:
         url = f"{base_url}/page-{page_number}/"
         page_links = get_links_from_page(url, class_name)
@@ -31,13 +35,15 @@ def parse_all_urls(base_url, class_name):
 
         all_links.extend(page_links)
         page_number += 1
-
+        # Ограничитель страниц. Если нужно парсить все страницы - закоментировать.
         if page_number > 2:
             break
-        # Задержка в 1 секунду между запросами
+        # Задержка в 1 секунду между запросами. Если задержка не нужна закоментировать.
         # time.sleep(1)
 
     return all_links
+
+# Ф-я выбора категории для парсинга
 
 
 def choose_category():
@@ -73,7 +79,7 @@ choice = choose_category()
 base_url = category_choices[choice]
 class_name = "text text--link"
 all_urls = parse_all_urls(base_url, class_name)
-
-with open("url.txt", "w") as file:  # Открываем файл в режиме дозаписи (append mode)
+# Сохранение спарсенных url в файл.
+with open("url.txt", "w") as file:  # Режиме дозаписи - поменять "w" на "а"
     for url in all_urls:
         file.write("https://viyar.ua" + url + "\n")
