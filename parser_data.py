@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
+import codecs
 
 
 def parse_page(url):
@@ -44,12 +45,22 @@ def parse_page(url):
             "sup", class_="product-price__title-sup") if price_tag else ""
         unit = unit_tag.text.strip() if unit_tag else ""
 
+        # Извлечение path_item
+        path_item_tag = soup.find(
+            "section", class_="main__section breadcrumbs-section")
+        path_item = ""
+        if path_item_tag:
+            path_item = "/".join([item.text.strip()
+                                 for item in path_item_tag.find_all("a", class_="breadcrumbs__link")][2:])
+
         return {
             "article": article,
-            "product_name": product_name,  # Заменена переменная name на product_name
+            "product_name": product_name,
+            "path_item": path_item,
             "characteristics": characteristics,
             "price": price,
             "unit": unit,
+
         }
 
     except requests.exceptions.RequestException as e:
@@ -57,13 +68,17 @@ def parse_page(url):
         return None
 
 
+def format_float_with_comma(number):
+    return f"{number:.2f}".replace(".", ",")
+
+
 # Чтение url из файла url.txt
 with open("url.txt", "r") as f:
     urls = f.read().splitlines()
 
 # Создание файла csv для записи результатов
-with open("data.csv", "w", newline="", encoding="utf-8") as csvfile:
-    fieldnames = ["Код товара", "Название продукта",
+with open("data.csv", "w", newline="", encoding="utf_8_sig") as csvfile:
+    fieldnames = ["Код товара", "Название продукта", "Путь разделов",
                   "Единица измерения", "Цена", "Длина", "Ширина", "Толщина"]
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=";")
     writer.writeheader()
@@ -77,9 +92,10 @@ with open("data.csv", "w", newline="", encoding="utf-8") as csvfile:
             writer.writerow({
                 "Код товара": parsed_data["article"] if parsed_data else "",
                 "Название продукта": parsed_data["product_name"] if parsed_data else "",
+                "Путь разделов": parsed_data["path_item"] if parsed_data else "",
                 "Единица измерения": parsed_data["unit"].replace("₴/", "") if parsed_data else "",
-                "Цена": parsed_data["price"] if parsed_data else "",
-                "Длина": parsed_data["characteristics"].get("length", "") if parsed_data else "",
-                "Ширина": parsed_data["characteristics"].get("width", "") if parsed_data else "",
-                "Толщина": parsed_data["characteristics"].get("depth", "") if parsed_data else "",
+                "Цена": format_float_with_comma(float(parsed_data["price"].replace(" ", "").replace(",", "."))) if parsed_data else "",
+                "Длина": format_float_with_comma(float(parsed_data["characteristics"].get("length", "").replace(",", "."))) if parsed_data else "",
+                "Ширина": format_float_with_comma(float(parsed_data["characteristics"].get("width", "").replace(",", "."))) if parsed_data else "",
+                "Толщина": format_float_with_comma(float(parsed_data["characteristics"].get("depth", "").replace(",", "."))) if parsed_data else "",
             })

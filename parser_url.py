@@ -32,7 +32,7 @@ def parse_all_urls(base_url, class_name):
         all_links.extend(page_links)
         page_number += 1
 
-        if page_number > 5:
+        if page_number > 2:
             break
         # Задержка в 1 секунду между запросами
         # time.sleep(1)
