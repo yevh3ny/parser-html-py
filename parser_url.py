@@ -32,7 +32,7 @@ def parse_all_urls(base_url, class_name):
         all_links.extend(page_links)
         page_number += 1
 
-        if page_number > 25:
+        if page_number > 5:
             break
         # Задержка в 1 секунду между запросами
         # time.sleep(1)
@@ -44,22 +44,28 @@ def choose_category():
     print("Выберите раздел из которого выполнять парсинг:")
     print("1 - Плитные материалы")
     print("2 - Мебельная фурнитура")
-    print("3 - Стекла и зеркала")
-    print("4 - Производственные услуги")
+    print("3 - Столешницы и степанели")
+    print("4 - Двери и гард.системы")
+    print("5 - Стекла и зеркала")
+    print("6 - Освещение для мебели")
+    print("7 - Производственные услуги")
 
     while True:
-        choice = input("Введите число от 1 до 4: ")
-        if choice in ["1", "2", "3", "4"]:
+        choice = input("Введите число от 1 до 7: ")
+        if choice in ["1", "2", "3", "4", "5", "6", "7"]:
             return choice
-        print("Некорректный ввод. Пожалуйста, выберите число от 1 до 4.")
+        print("Некорректный ввод. Пожалуйста, выберите число от 1 до 7.")
 
 
 # Сопоставление выбора с соответствующим base_url
 category_choices = {
     "1": "https://viyar.ua/catalog/plitnye_materialy",
     "2": "https://viyar.ua/catalog/mebelnaya_furnitura",
-    "3": "https://viyar.ua/catalog/stekla_zerkala",
-    "4": "https://viyar.ua/catalog/uslugi",
+    "3": "https://viyar.ua/ua/catalog/stoleshnitsy_stenpaneli",
+    "4": "https://viyar.ua/ua/catalog/razdvizhnye_sistemy",
+    "5": "https://viyar.ua/catalog/stekla_zerkala",
+    "6": "https://viyar.ua/catalog/osveshchenie_dlya_mebeli",
+    "7": "https://viyar.ua/catalog/uslugi",
 
 }
 
