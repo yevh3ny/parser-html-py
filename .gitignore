@@ -1,0 +1,6 @@
+/env/
+/__pycache__/
+parsed_data.csv
+url.txt
+parser.log
+data.csv
