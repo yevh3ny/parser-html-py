@@ -102,7 +102,7 @@ with open("data.csv", "w", newline="", encoding="utf_8_sig") as csvfile:
         if parsed_data:
 
             price = float(parsed_data["price"].replace(
-                " ", "").replace(",", "."))
+                " ", "").replace(",", ".")) if parsed_data["price"] else 0.0
             length = float(parsed_data["characteristics"].get("length", "").replace(" ", "").replace(
                 ",", ".")) if parsed_data["characteristics"].get("length", "") else 0.0
             width = float(parsed_data["characteristics"].get("width", "").replace(" ", "").replace(
