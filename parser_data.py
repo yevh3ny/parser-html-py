@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 import codecs
+import re
 
 
 def parse_page(url):
@@ -10,7 +11,6 @@ def parse_page(url):
         response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
 
-        # Парсинг значений Артикул, Имя продукта, Путь, Цена, Ед. измерения, Длина, Ширина, Толщина
         article_tag = soup.find("sup", class_="product__title-sup m680--none")
         article = article_tag.find_next(
             "span", class_="product__title-sup-value").text.strip() if article_tag else ""
@@ -63,31 +63,44 @@ def parse_page(url):
         print("Ошибка при загрузке страницы:", e)
         return None
 
-# Ф-я преобразования в числовой формат
-
 
 def format_float_with_comma(number):
     return f"{number:.2f}".replace(".", ",")
 
 
-# Чтение url из файла url.txt
+def extract_texture(product_name):
+
+    pattern = r"\b(?:[A-Za-z]{1,}\s*\d{1,}(?:\s*\w{1,})?)\b"
+    matches = re.findall(pattern, product_name)
+    if matches:
+        texture = matches[0].replace(" ", "").replace("/", "")
+        return f"{texture}.jpg"
+    return ""
+
+
+def extract_texture_surface(path_item):
+    if path_item:
+        items = path_item.split("/")
+        return items[-1].strip()
+    return ""
+
+
 with open("url.txt", "r") as f:
     urls = f.read().splitlines()
 
-# Создание файла csv для записи результатов
+
 with open("data.csv", "w", newline="", encoding="utf_8_sig") as csvfile:
     fieldnames = ["Артикул материала", "Наименование материала", "Наименование группы",
-                  "Единица измерения", "Стоимость", "Длина", "Ширина", "Толщина", "Толщина2"]
+                  "Единица измерения", "Стоимость", "Длина", "Ширина", "Толщина", "Обозначение", "Текстура", "Толщина2"]
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=";")
     writer.writeheader()
 
     for url in urls:
-        # Парсинг данных для каждого url
+
         parsed_data = parse_page(url)
 
         if parsed_data:
-            # Запись результатов в файл csv
-            # Преобразование и форматирование чисел перед записью в файл csv
+
             price = float(parsed_data["price"].replace(
                 " ", "").replace(",", "."))
             length = float(parsed_data["characteristics"].get("length", "").replace(" ", "").replace(
@@ -96,6 +109,9 @@ with open("data.csv", "w", newline="", encoding="utf_8_sig") as csvfile:
                 ",", ".")) if parsed_data["characteristics"].get("width", "") else 0.0
             depth = float(parsed_data["characteristics"].get("depth", "").replace(" ", "").replace(
                 ",", ".")) if parsed_data["characteristics"].get("depth", "") else 0.0
+            texture = extract_texture(parsed_data["product_name"])
+            texture_surface = extract_texture_surface(parsed_data["path_item"])
+
             writer.writerow({
                 "Артикул материала": parsed_data["article"] if parsed_data else "",
                 "Наименование материала": parsed_data["product_name"] if parsed_data else "",
@@ -105,5 +121,7 @@ with open("data.csv", "w", newline="", encoding="utf_8_sig") as csvfile:
                 "Длина": format_float_with_comma(length) if parsed_data else "",
                 "Ширина": format_float_with_comma(width) if parsed_data else "",
                 "Толщина": format_float_with_comma(depth) if parsed_data else "",
+                "Обозначение": format_float_with_comma(depth) + " мм" if parsed_data else "",
+                "Текстура": texture_surface + "\\" + texture if texture and texture_surface else "",
                 "Толщина2": format_float_with_comma(depth) if parsed_data else "",
             })
